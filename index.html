@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bayarin Disini Aja - Bill Payment & Top-Up</title>
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+    <!-- ===== LOGIN PAGE ===== -->
+    <div class="login-page" id="loginPage">
+        <div class="login-container">
+            <div class="login-brand">
+                <i class="fas fa-wallet"></i>
+                <h1>Bayarin<span>Disini</span>Aja</h1>
+                <p>Bayar tagihan & isi pulsa jadi mudah</p>
+            </div>
+            <div class="login-card">
+                <h2><i class="fas fa-sign-in-alt"></i> Masuk</h2>
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email / Username</label>
+                        <input type="text" class="form-control" id="loginEmail" placeholder="user@bayarin.com" value="admin@bayarin.com" />
+                        <div class="form-error" id="loginEmailError">Email tidak boleh kosong</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" value="password123" />
+                        <div class="form-error" id="loginPasswordError">Password tidak boleh kosong</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full">
+                        <i class="fas fa-arrow-right"></i> Masuk
+                    </button>
+                </form>
+                <div class="login-demo">
+                    <p>🔑 Demo: <strong>admin@bayarin.com</strong> / <strong>password123</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MAIN APP ===== -->
+    <div class="app-container" id="appContainer" style="display:none;">
+
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-inner">
+                <div class="logo" onclick="navigateTo('dashboard')">
+                    <i class="fas fa-wallet"></i>
+                    Bayarin<span>Disini</span>Aja
+                </div>
+
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="#" class="active" data-section="dashboard"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+                    <li><a href="#" data-section="bill"><i class="fas fa-file-invoice"></i> <span>Tagihan</span></a></li>
+                    <li><a href="#" data-section="spp"><i class="fas fa-graduation-cap"></i> <span>SPP</span></a></li>
+                    <li><a href="#" data-section="pulsa"><i class="fas fa-mobile-alt"></i> <span>Pulsa</span></a></li>
+                    <li><a href="#" data-section="history"><i class="fas fa-clock-rotate-left"></i> <span>Riwayat</span></a></li>
+                </ul>
+
+                <div class="header-right">
+                    <div class="balance-badge">
+                        <i class="fas fa-coins"></i> Saldo: <span id="saldoDisplay">Rp1.500.000</span>
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="handleLogout()" style="color:white; border-color:rgba(255,255,255,0.3);">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
+            <!-- SECTION: DASHBOARD -->
+            <section class="section active" id="section-dashboard">
+                <div class="flex-between">
+                    <div>
+                        <h1 class="section-title"><i class="fas fa-home"></i> Dashboard</h1>
+                        <p class="section-sub">Selamat datang, <span id="userNameDisplay">User</span>! Pilih layanan yang ingin Anda gunakan.</p>
+                    </div>
+                </div>
+
+                <div class="grid-4">
+                    <div class="card card-clickable" onclick="navigateTo('bill')">
+                        <div class="card-icon teal"><i class="fas fa-file-invoice"></i></div>
+                        <h3>Bayar Tagihan</h3>
+                        <p>Listrik, PDAM, Internet, Seminar</p>
+                    </div>
+                    <div class="card card-clickable" onclick="navigateTo('spp')">
+                        <div class="card-icon purple"><i class="fas fa-graduation-cap"></i></div>
+                        <h3>Biaya Kuliah / SPP</h3>
+                        <p>Cicilan semester mahasiswa</p>
+                    </div>
+                    <div class="card card-clickable" onclick="navigateTo('pulsa')">
+                        <div class="card-icon orange"><i class="fas fa-mobile-alt"></i></div>
+                        <h3>Isi Pulsa & Paket</h3>
+                        <p>Semua provider Indonesia</p>
+                    </div>
+                    <div class="card card-clickable" onclick="navigateTo('history')">
+                        <div class="card-icon green"><i class="fas fa-clock-rotate-left"></i></div>
+                        <h3>Riwayat Transaksi</h3>
+                        <p>Lihat histori pembayaran</p>
+                    </div>
+                </div>
+
+                <div class="card mt-2 promo-banner">
+                    <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                        <i class="fas fa-gift" style="font-size:2.5rem; opacity:0.8;"></i>
+                        <div style="flex:1;">
+                            <h3 style="color:white; margin-bottom:0.25rem;">✨ Promo Spesial!</h3>
+                            <p style="opacity:0.9; margin:0;">Bayar tagihan & isi pulsa dapat cashback 5% hingga Rp50.000</p>
+                        </div>
+                        <span style="background:rgba(255,255,255,0.2); padding:6px 20px; border-radius:50px; font-weight:600; font-size:0.9rem;">Berlaku 30 Hari</span>
+                    </div>
+                </div>
+
+                <div class="grid-3 mt-2">
+                    <div class="card">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div class="stat-icon green"><i class="fas fa-check-circle fa-lg"></i></div>
+                            <div>
+                                <div class="stat-number" id="totalTransaksi">0</div>
+                                <div class="stat-label">Total Transaksi</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div class="stat-icon orange"><i class="fas fa-coins fa-lg"></i></div>
+                            <div>
+                                <div class="stat-number" id="totalPengeluaran">Rp0</div>
+                                <div class="stat-label">Total Pengeluaran</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div class="stat-icon blue"><i class="fas fa-calendar-day fa-lg"></i></div>
+                            <div>
+                                <div class="stat-number" id="transaksiHariIni">0</div>
+                                <div class="stat-label">Transaksi Hari Ini</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: BAYAR TAGIHAN -->
+            <section class="section" id="section-bill">
+                <h1 class="section-title"><i class="fas fa-file-invoice"></i> Bayar Tagihan</h1>
+                <p class="section-sub">Pilih kategori tagihan, masukkan nomor pelanggan, dan cek tagihan Anda.</p>
+
+                <div class="card">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Kategori Tagihan <span class="required">*</span></label>
+                            <select class="form-control" id="billCategory">
+                                <option value="pln">Listrik (PLN)</option>
+                                <option value="pdam">PDAM</option>
+                                <option value="internet">Internet</option>
+                                <option value="seminar">Seminar / Event</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nomor Pelanggan / ID <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="billCustomerId" placeholder="Masukkan nomor pelanggan..." />
+                            <div class="form-error" id="billError">Nomor pelanggan harus 8-12 digit angka (kecuali seminar alfanumerik)</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="btnCekTagihan" onclick="window.cekTagihan()">
+                        <i class="fas fa-search"></i> Cek Tagihan
+                    </button>
+
+                    <div class="loading-overlay" id="billLoading">
+                        <div class="spinner"></div>
+                        <p>Mencari data tagihan...</p>
+                    </div>
+
+                    <div class="bill-result" id="billResult">
+                        <h3 style="color:var(--primary); margin-bottom:0.75rem;"><i class="fas fa-receipt"></i> Detail Tagihan</h3>
+                        <div class="bill-detail" id="billDetail"></div>
+
+                        <hr style="margin:1rem 0;" />
+
+                        <label style="font-weight:600; display:block; margin-bottom:0.5rem;">Pilih Metode Pembayaran <span class="required">*</span></label>
+                        <div class="payment-methods" id="paymentMethods">
+                            <div class="payment-method" data-method="va" onclick="window.selectPayment('va')">
+                                <i class="fas fa-university"></i>
+                                <span>Virtual Account</span>
+                            </div>
+                            <div class="payment-method" data-method="qris" onclick="window.selectPayment('qris')">
+                                <i class="fas fa-qrcode"></i>
+                                <span>QRIS</span>
+                            </div>
+                            <div class="payment-method" data-method="teller" onclick="window.selectPayment('teller')">
+                                <i class="fas fa-building"></i>
+                                <span>Teller / Kasir</span>
+                            </div>
+                        </div>
+
+                        <div id="paymentDetail" style="margin:0.75rem 0; padding:0.75rem; background:var(--gray-50); border-radius:var(--radius-sm); display:none;"></div>
+
+                        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.75rem;">
+                            <button class="btn btn-success" id="btnBayarTagihan" onclick="window.prosesBayarTagihan()">
+                                <i class="fas fa-check"></i> Bayar Sekarang
+                            </button>
+                            <button class="btn btn-outline" onclick="window.resetBill()">
+                                <i class="fas fa-undo"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: SPP -->
+            <section class="section" id="section-spp">
+                <h1 class="section-title"><i class="fas fa-graduation-cap"></i> Biaya Kuliah / SPP</h1>
+                <p class="section-sub">Masukkan NIM untuk melihat daftar cicilan semester.</p>
+
+                <div class="card">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>NIM (Nomor Induk Mahasiswa) <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="sppNim" placeholder="Contoh: 202310001" />
+                            <div class="form-error" id="sppError">NIM harus 9-12 digit angka</div>
+                        </div>
+                        <div class="form-group" style="display:flex; align-items:flex-end;">
+                            <button class="btn btn-primary w-full" onclick="window.cekSpp()">
+                                <i class="fas fa-search"></i> Lihat Tagihan Semester
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="loading-overlay" id="sppLoading">
+                        <div class="spinner"></div>
+                        <p>Memuat data SPP...</p>
+                    </div>
+
+                    <div id="sppResult" style="display:none;">
+                        <div class="flex-between" style="margin:1rem 0 0.5rem;">
+                            <h3 style="color:var(--primary);"><i class="fas fa-list"></i> Daftar Cicilan Semester</h3>
+                            <span id="sppMahasiswa" style="font-weight:600; color:var(--gray-600);"></span>
+                        </div>
+                        <div class="spp-list" id="sppList"></div>
+
+                        <div class="spp-total">
+                            <span>Total Dipilih:</span>
+                            <span id="sppTotalAmount">Rp0</span>
+                        </div>
+
+                        <div style="display:flex; gap:0.75rem; margin-top:1rem; flex-wrap:wrap;">
+                            <button class="btn btn-success" onclick="window.prosesBayarSpp()">
+                                <i class="fas fa-check"></i> Bayar yang Dipilih
+                            </button>
+                            <button class="btn btn-outline" onclick="window.resetSpp()">
+                                <i class="fas fa-undo"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: PULSA -->
+            <section class="section" id="section-pulsa">
+                <h1 class="section-title"><i class="fas fa-mobile-alt"></i> Isi Pulsa & Paket Data</h1>
+                <p class="section-sub">Pilih provider, masukkan nomor HP, dan pilih nominal pulsa.</p>
+
+                <div class="card">
+                    <label style="font-weight:600; display:block; margin-bottom:0.5rem;">Pilih Provider <span class="required">*</span></label>
+                    <div class="provider-grid" id="providerGrid">
+                        <div class="provider-item" data-provider="telkomsel" onclick="window.selectProvider('telkomsel')">
+                            <span class="emoji">📶</span> Telkomsel
+                        </div>
+                        <div class="provider-item" data-provider="xl" onclick="window.selectProvider('xl')">
+                            <span class="emoji">📱</span> XL Axiata
+                        </div>
+                        <div class="provider-item" data-provider="indosat" onclick="window.selectProvider('indosat')">
+                            <span class="emoji">📡</span> Indosat
+                        </div>
+                        <div class="provider-item" data-provider="tri" onclick="window.selectProvider('tri')">
+                            <span class="emoji">📲</span> Tri (3)
+                        </div>
+                        <div class="provider-item" data-provider="smartfren" onclick="window.selectProvider('smartfren')">
+                            <span class="emoji">📶</span> Smartfren
+                        </div>
+                        <div class="provider-item" data-provider="axis" onclick="window.selectProvider('axis')">
+                            <span class="emoji">📱</span> Axis
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nomor HP <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="pulsaPhone" placeholder="08xxxxxxx" />
+                            <div class="form-error" id="pulsaError">Nomor HP harus 10-13 digit dan diawali 08</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Nominal Pulsa <span class="required">*</span></label>
+                            <div class="nominal-grid" id="nominalGrid">
+                                <div class="nominal-item" data-nominal="10000" onclick="window.selectNominal('10000')">Rp10.000</div>
+                                <div class="nominal-item" data-nominal="25000" onclick="window.selectNominal('25000')">Rp25.000</div>
+                                <div class="nominal-item" data-nominal="50000" onclick="window.selectNominal('50000')">Rp50.000</div>
+                                <div class="nominal-item" data-nominal="100000" onclick="window.selectNominal('100000')">Rp100.000</div>
+                                <div class="nominal-item" data-nominal="200000" onclick="window.selectNominal('200000')">Rp200.000</div>
+                            </div>
+                            <input type="number" class="form-control" id="pulsaCustom" placeholder="Atau masukkan nominal sendiri..." style="margin-top:0.5rem;" />
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="window.cekPulsa()">
+                        <i class="fas fa-search"></i> Preview Pembayaran
+                    </button>
+
+                    <div class="loading-overlay" id="pulsaLoading">
+                        <div class="spinner"></div>
+                        <p>Memproses...</p>
+                    </div>
+
+                    <div class="bill-result" id="pulsaResult">
+                        <h3 style="color:var(--primary); margin-bottom:0.75rem;"><i class="fas fa-receipt"></i> Detail Pembelian</h3>
+                        <div class="bill-detail" id="pulsaDetail"></div>
+
+                        <hr style="margin:1rem 0;" />
+
+                        <label style="font-weight:600; display:block; margin-bottom:0.5rem;">Metode Pembayaran <span class="required">*</span></label>
+                        <div class="payment-methods" id="paymentMethodsPulsa">
+                            <div class="payment-method" data-method="va" onclick="window.selectPaymentPulsa('va')">
+                                <i class="fas fa-university"></i>
+                                <span>Virtual Account</span>
+                            </div>
+                            <div class="payment-method" data-method="qris" onclick="window.selectPaymentPulsa('qris')">
+                                <i class="fas fa-qrcode"></i>
+                                <span>QRIS</span>
+                            </div>
+                            <div class="payment-method" data-method="teller" onclick="window.selectPaymentPulsa('teller')">
+                                <i class="fas fa-building"></i>
+                                <span>Teller / Kasir</span>
+                            </div>
+                        </div>
+                        <div id="paymentDetailPulsa" style="margin:0.75rem 0; padding:0.75rem; background:var(--gray-50); border-radius:var(--radius-sm); display:none;"></div>
+
+                        <button class="btn btn-success mt-1" onclick="window.prosesBayarPulsa()">
+                            <i class="fas fa-check"></i> Bayar Sekarang
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: HISTORY -->
+            <section class="section" id="section-history">
+                <div class="flex-between">
+                    <div>
+                        <h1 class="section-title"><i class="fas fa-clock-rotate-left"></i> Riwayat Transaksi</h1>
+                        <p class="section-sub">Semua transaksi yang telah Anda lakukan tersimpan di sini.</p>
+                    </div>
+                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                        <button class="btn btn-outline btn-sm" onclick="window.filterHistory('all')"><i class="fas fa-list"></i> Semua</button>
+                        <button class="btn btn-outline btn-sm" onclick="window.filterHistory('success')"><i class="fas fa-check-circle" style="color:var(--success);"></i> Sukses</button>
+                        <button class="btn btn-outline btn-sm" onclick="window.filterHistory('pending')"><i class="fas fa-clock" style="color:var(--warning);"></i> Pending</button>
+                        <button class="btn btn-danger btn-sm" onclick="window.clearHistory()"><i class="fas fa-trash"></i> Hapus Semua</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Layanan</th>
+                                    <th>Deskripsi</th>
+                                    <th>Jumlah</th>
+                                    <th>Metode</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <tr>
+                                    <td colspan="6" style="text-align:center; color:var(--gray-400); padding:2rem;">
+                                        <i class="fas fa-inbox" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
+                                        Belum ada transaksi
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ===== MODAL ===== -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button class="modal-close" onclick="window.closeModal()"><i class="fas fa-times"></i></button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+</html>
